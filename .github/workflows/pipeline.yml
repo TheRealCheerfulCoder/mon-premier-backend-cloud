@@ -2,37 +2,19 @@ name: Java Backend CI
 
 on:
   push:
-    branches: [ "main" ] # Se déclenche à chaque push sur main
+    branches: [ "main" ]
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest # On utilise une machine virtuelle Linux gratuite de GitHub
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Récupérer le code
+      - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Installer le JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Compiler l'application
-        run: javac Hello.java && jar cvf app.jar Hello.class
-
-
-      - name: Exécuter les Tests Unitaires
-        run: |
-        # Ici, on simule l'exécution. 
-        # Avec Maven ce serait : mvn test
-        echo "Exécution des tests JUnit..."
-        exit 2
-        # Si cette commande échoue (code de sortie != 0), la suite est annulée.
-
-      - name: Vérifier Docker
-        if: success() # Ne s'exécute que si les tests sont passés
-        run: docker build -t mon-app-java:${{ github.sha }} .
+      # Étape de test (Optionnelle mais recommandée pour le "Fail Fast")
+      - name: Run Tests with Maven
+        run: mvn test 
 
       - name: Connexion au Docker Hub
         uses: docker/login-action@v3
@@ -40,9 +22,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build et Push de l'image
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          # On utilise l'image générée par le Dockerfile qui contient le build Maven
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/mon-app-java:latest
