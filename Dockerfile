@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn clean package
 
 # Étape 2 : Image finale légère
-FROM openjdk:17-jdk-slim
+FROM openjdk:17.0.1-jdk-slim
 WORKDIR /app
 # On récupère le JAR généré à l'étape précédente
 # Note : le nom du JAR dépend de l'artifactId dans ton pom.xml
