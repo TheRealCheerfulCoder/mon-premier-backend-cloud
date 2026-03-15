@@ -21,7 +21,17 @@ jobs:
       - name: Compiler l'application
         run: javac Hello.java && jar cvf app.jar Hello.class
 
+
+      - name: Exécuter les Tests Unitaires
+        run: |
+        # Ici, on simule l'exécution. 
+        # Avec Maven ce serait : mvn test
+        echo "Exécution des tests JUnit..."
+        exit 2
+        # Si cette commande échoue (code de sortie != 0), la suite est annulée.
+
       - name: Vérifier Docker
+        if: success() # Ne s'exécute que si les tests sont passés
         run: docker build -t mon-app-java:${{ github.sha }} .
 
       - name: Connexion au Docker Hub

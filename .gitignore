@@ -1,0 +1,11 @@
+# Java
+*.class
+*.jar
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Docker
+.docker/

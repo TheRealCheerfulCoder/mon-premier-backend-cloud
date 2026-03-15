@@ -1,16 +1,16 @@
-# --- ÉTAPE 1 : La Compilation (Build) ---
-FROM openjdk:17-ea-jdk-alpine AS builder
-WORKDIR /build
-# On copie le code source
-COPY Hello.java .
-COPY manifest.txt .
-# On compile à l'intérieur de Docker
-RUN javac Hello.java && jar cvfm app.jar manifest.txt Hello.class
-
-# --- ÉTAPE 2 : L'Exécution (Runtime) ---
-# On repart d'une image minuscule (JRE uniquement)
-FROM eclipse-temurin:17-jre-alpine
+# Étape 1 : Build avec Maven
+FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
-# On ne récupère que le JAR de l'étape précédente
-COPY --from=builder /build/app.jar .
+COPY pom.xml .
+COPY src ./src
+# On compile et on crée le JAR
+RUN mvn clean package
+
+# Étape 2 : Image finale légère
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+# On récupère le JAR généré à l'étape précédente
+# Note : le nom du JAR dépend de l'artifactId dans ton pom.xml
+COPY --from=build /app/target/mon-app-java-1.0-SNAPSHOT.jar app.jar
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
